@@ -4,47 +4,57 @@ int HEIGHT=720;
 int SMOOTHING_WINDOW = 10;
 int MARGIN;
 
-float compute_flatness(FFT fft, float sum_of_spectrum){   
-  /* your code here*/
-  float flatness= random(-5,5);
-   return flatness;
+float compute_flatness(FFT fft, float sum_of_spectrum){  
+  float flatness = 0;
+  float num = 0;
+  for (int i = 0; i < fft.specSize(); i++) {
+     num *= fft.getBand(i);
+  }
+  float exp = pow(fft.specSize(), -1);
+  num = pow(num, exp);
+  flatness = fft.specSize()*num/(sum_of_spectrum);
+  return flatness;
 }
 
 float compute_centroid(FFT fft, float sum_of_spectrum, 
                                         float[] freqs){
-  // float centroid=random(-5,5);
-   float sum = 0;
-   for (int i = 0; i < fft.specSize(); i++ )
-   {
-     sum += freqs[i]*abs(fft.getBand(i));
+   float centroid = 0;
+   float num = 0;
+   for (int i = 0; i < fft.specSize(); i++) {
+     num += freqs[i]*fft.getBand(i);
    }
-   float centroid= sum / sum_of_spectrum;
+   centroid = num/sum_of_spectrum;
    return centroid;
-   
 }
 
 float compute_spread(FFT fft, float centroid, float sum_of_bands, float[] freqs){
-  float spread=random(-5,5);
-
+  
+  float spread = 0;
   float num = 0;
-  for (int i = 0; i < fft.specSize(); i++) {
-      num += pow(freqs[i] - centroid, 2) * fft.getBand(i);
-  }
-  return num / sum_of_bands;
+   for (int i = 0; i < fft.specSize(); i++) {
+     num += pow(freqs[i] - centroid, 2)*fft.getBand(i);
+   }
+  spread = num/sum_of_bands;
+  return spread;
 }
 
 float compute_skewness(FFT fft, float centroid, float spread, float[] freqs){
-  //float skewness=random(-5,5);
+  float skewness=random(-5,5);
   float num = 0;
   for (int i = 0; i < fft.specSize(); i++) {
-    num += pow(freqs[i] - centroid, 3) * fft.getBand(i);
+    num += pow(freqs[i] - centroid, 3)*fft.getBand(i);
   }
-  return num / (0.0001+fft.specSize() * pow(spread, 3));  
+  skewness = num/(0.0001 + (fft.specSize()*pow(spread, 3)));
+  return skewness;
 }
 
 float compute_entropy(FFT fft){
-  float entropy =random(-5,5);
-  /* your code here*/
+  float entropy = 0;
+  float num = 0;
+  for (int i = 0; i < fft.specSize(); i++) {
+    num += log(0.0001 + fft.getBand(i))*fft.getBand(i);
+  }
+  entropy = -num/log(fft.specSize());
   return entropy;
 }
 
@@ -131,7 +141,7 @@ class AgentFeature {
     this.energy=0;
   }
   float smooth_filter(float old_value, float new_value){
-    /* Try to implement a smoothing filter using this.lambda_smooth*/
+    new_value = old_value + this.lambda_smooth*(new_value - old_value);
     return new_value;
   }
   void reasoning(AudioBuffer mix){
